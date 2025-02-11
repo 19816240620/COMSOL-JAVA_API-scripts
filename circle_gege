@@ -1,0 +1,64 @@
+int num_ell = 100;//圆数量
+double rstart = 2; //圆最小半径
+double rend = 3; //圆最大半径
+double thickness=0.5; //圆厚度
+double xstart = 0; //基体x方向最小坐标
+double xend = 100; //基体x方向最大坐标
+double ystart = 0;
+double yend = 100;
+double r_list[] = new double[num_ell+1];
+double x_list[] = new double[num_ell+1];
+double y_list[] = new double[num_ell+1];
+
+int i = 0;
+while (i < num_ell) {
+  double r = rstart+(double) (Math.random()*(rend-rstart));
+  double x = xstart+(double) (Math.random()*(xend-xstart));
+  double y = ystart+(double) (Math.random()*(yend-ystart));  
+  int i3 = 0;
+  int i2 = 0;
+  r_list[i] = r;
+  x_list[i] = x;
+  y_list[i] = y;
+  for (int k = 0; k < i; k++) {
+    if (((r_list[i] < rstart) || (r_list[i] > rend)) || ((x_list[i]-x_list[k])*(x_list[i]-x_list[k])+(y_list[i]-y_list[k])*(y_list[i]-y_list[k]) < (r_list[i]+r_list[k])*(r_list[i]+r_list[k]))) {
+      i2 = 1;
+      
+    }
+    else {
+      i2 = 0;
+    }
+    i3 = i2+i3;
+  }
+  if (((x_list[i]-xstart <= r_list[i]) || (xend-x_list[i] <= r_list[i]))) {continue; }
+  if (((y_list[i]-ystart <= r_list[i]) || (yend-y_list[i] <= r_list[i]))) {continue; }
+  if (i3 == 0) {i++; }
+}
+for (int l = 0; l < num_ell; l++) {
+  model.component("comp1").geom("geom1").create("c"+l, "Circle");
+  model.component("comp1").geom("geom1").feature("c"+l).set("r", r_list[l]);
+  model.component("comp1").geom("geom1").feature("c"+l).set("pos", new double[]{x_list[l], y_list[l]});
+  model.component("comp1").geom("geom1").runPre("fin");
+  model.component("comp1").geom("geom1").create("ke"+l, "Circle");
+  model.component("comp1").geom("geom1").feature("ke"+l).set("r", r_list[l]-thickness);
+  model.component("comp1").geom("geom1").feature("ke"+l).set("pos", new double[]{x_list[l], y_list[l]});
+  model.component("comp1").geom("geom1").runPre("fin");
+}
+model.component("comp1").geom("geom1").create("r1", "Rectangle");
+model.component("comp1").geom("geom1").feature("r1").set("size", new double[]{xend, yend});
+model.component("comp1").geom("geom1").feature("r1").set("pos", new double[]{xstart, ystart});
+model.component("comp1").geom("geom1").runPre("fin");
+String[] keyy = new String[num_ell];
+String[] ke = new String[num_ell];
+for (int i4 = 0; i4 < num_ell; i4++) {
+  keyy[i4] = "c"+(i4);
+  ke[i4] = "ke"+(i4);
+}
+model.component("comp1").geom("geom1").create("all_key", "Union");
+model.component("comp1").geom("geom1").feature("all_key").selection("input").set(ke);
+model.component("comp1").geom("geom1").run("all_key");
+model.component("comp1").geom("geom1").run("fin");
+model.component("comp1").geom("geom1").create("all2", "Union");
+model.component("comp1").geom("geom1").feature("all2").selection("input").set(keyy);
+model.component("comp1").geom("geom1").run("all2");
+model.component("comp1").geom("geom1").run("fin");
